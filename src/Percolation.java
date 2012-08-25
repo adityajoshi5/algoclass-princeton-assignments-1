@@ -4,21 +4,23 @@ public class Percolation {
 	private int gridSize;
 
 	private WeightedQuickUnionUF linearGrid;
+	private WeightedQuickUnionUF linearGridNoBackwash;
 
-	private int[][] grid;
+	private boolean[][] grid;
 
 	public Percolation(int N) {
 		// create N-by-N grid, with all sites blocked
 		this.gridSize = N;
 		linearGrid = new WeightedQuickUnionUF(gridSize * gridSize + 2);
-		grid = new int[gridSize][gridSize];
+		linearGridNoBackwash = new WeightedQuickUnionUF(gridSize * gridSize + 2);
+		grid = new boolean[gridSize][gridSize];
 	}
 
 	public void open(int i, int j) {
 		// open site (row i, column j) if it is not already
 		validate(i, j);
 		if (!isOpen(i, j)) {
-			grid[i - 1][j - 1] = 1;
+			grid[i - 1][j - 1] = true;
 
 			unite(i, j, i - 1, j);
 			unite(i, j, i + 1, j);
@@ -27,6 +29,7 @@ public class Percolation {
 
 			if (i == 1) { // connect to virtual top site
 				linearGrid.union(0, xyTo1D(i, j));
+				linearGridNoBackwash.union(0, xyTo1D(i, j));
 			} 
 			if (i == gridSize) { // connect to virtual bottom site
 				linearGrid.union(1, xyTo1D(i, j));
@@ -37,18 +40,13 @@ public class Percolation {
 	public boolean isOpen(int i, int j) {
 		// is site (row i, column j) open?
 		validate(i, j);
-		return grid[i - 1][j - 1] > 0;
+		return grid[i - 1][j - 1];
 	}
 
 	public boolean isFull(int i, int j) {
 		// is site (row i, column j) full?
 		validate(i, j);
-		if (!percolates()){
-			return linearGrid.connected(0, xyTo1D(i, j));
-		}else{
-			// TODO
-			return false;
-		}
+		return linearGridNoBackwash.connected(0, xyTo1D(i, j));
 	}
 
 	public boolean percolates() {
@@ -64,6 +62,7 @@ public class Percolation {
 	private void unite(int i, int j, int m, int n) { // 1-based coordinates
 		if (m > 0 && n > 0 && m <= gridSize && n <= gridSize && isOpen(m, n)) {
 			linearGrid.union(xyTo1D(i, j), xyTo1D(m, n));
+			linearGridNoBackwash.union(xyTo1D(i, j), xyTo1D(m, n));
 		}
 	}
 

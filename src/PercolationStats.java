@@ -19,7 +19,7 @@ public class PercolationStats {
 					openSitesCount++;
 				}
 			}
-			thresholds[i] = openSitesCount / Math.pow(N, 2);
+			thresholds[i] = openSitesCount / (N*N);
 		}
 	}
 
